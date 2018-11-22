@@ -1,0 +1,54 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="model">
+	<class name="SciType" table="scitype">
+		<id name="typeId" type="string">
+			<column name="typeid" />
+			<generator class="assigned" />
+		</id>
+		<property name="typeName" type="string" column="typename" />
+	</class>
+
+	<class name="User" table="user">
+		<id name="userId" type="string">
+			<column name="userid" />
+			<generator class="assigned" />
+		</id>
+		<property name="password" type="string" column="password" />
+		<property name="username" type="string" column="username" />
+		<property name="userType" type="string" column="usertype" />
+	</class>
+
+	<class name="Sci" table="scilist">
+		<id name="SciId" type="string">
+			<column name="sciid" />
+			<generator class="assigned" />
+		</id>
+		<property name="title" type="string" column="title" />
+		<property name="userId" type="string" column="userid" />
+		<property name="beginDate" type="date" column="begindate" />
+		<property name="endDate" type="date" column="enddate" />
+		<property name="content" type="string" column="content" />
+		<property name="status" type="string" column="status" />
+		<property name="typeId" type="string" column="typeid" />
+	</class>
+
+	<class name="Group" table="groupmember">
+		<id name="id" type="int">
+			<column name="id" />
+			<generator class="identity" />
+		</id>
+		<property name="sciId" type="string" column="sciid" ></property>
+		<property name="userId" type="string" column="userid" />
+		<property name="weight" type="int" column="weight" ></property>
+	</class>
+	
+	<class name="History" table="history">
+		<id name="id" type="int">
+			<column name="id" />
+			<generator class="identity" />
+		</id>
+		<property name="sciId" type="string" column="sciid" ></property>
+		<property name="result" type="string" column="result" />
+		<property name="date" type="date" column="date" ></property>
+	</class>
+</hibernate-mapping>  

@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Material Design for Bootstrap fonts and icons -->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+
+		<!-- Material Design for Bootstrap CSS -->
+		<!--<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">-->
+		<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.1.0/css/bootstrap.min.css">
+		<link href="http://cdn.bootcss.com/bootstrap-daterangepicker/3.0.2/daterangepicker.css" rel="stylesheet">
+		<script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script>
+		<title>新建科研项目</title>
+	</head>
+
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="jumbotron">
+						<h2 align="center">欢迎申报科研项目！</h2>
+						<!--<p>
+							更多详情请登录官网进行查询
+						</p>-->
+						<!--<p>
+							<a class="btn btn-primary btn-large active" href="#">了解更多</a>
+						</p>-->
+					</div>
+					<form role="form" class="offset-md-3 col-md-6">
+						<div class="form-group">
+							<label for="title">题目</label>
+							<input type="text" class="form-control" id="title" />
+						</div>
+						<div class="form-group" id="app">
+							<label for="sel1">类型</label>
+							<select id="select" class="form-control">
+								<option v-for="type in sciTypeList">{{ type.typeId+' '+type.typeName }}</option>
+								<!--<option>分院科研项目</option>
+								<option>学院科研项目</option>
+								<option>省级科研项目</option>
+								<option>国家级科研项目</option>-->
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="leader">主要负责人</label>
+							<input type="text" class="form-control" id="leader" />
+						</div>
+						<div class="form-group">
+							<label for="groupmember1">小组成员1</label>
+							<input type="text" class="form-control" id="groupmember1" />
+							<div id="auto_div1" style="position: absolute; z-index: 1; background: #FFFFFF; width: 100%;">
+ 							</div>
+						</div>
+						<div class="form-group">
+							<label for="groupmember2">小组成员2</label>
+							<input type="text" class="form-control" id="groupmember2" />
+							<div id="auto_div2" style="position: absolute; z-index: 1; background: #FFFFFF; width: 100%;">
+ 							</div>
+						</div>
+						<div class="form-group">
+							<label for="time">项目时间</label>
+							<input type="text" class="form-control" id="daterange-text" />
+						</div>
+						<div class="form-group">
+							<label for="content">详细内容</label>
+							<textarea class="form-control" rows="5" id="content"></textarea>
+						</div>
+						<div class="checkbox">
+							<label><input type="checkbox" id="cbx"/>
+								我已阅读《浙江大学城市学院科研项目条例》
+							</label>
+						</div>
+						<span id="info"></span>
+						<div align="center">
+							<button type="button" class="btn btn-primary" id="submit" disabled="disabled">提交</button>
+							<button type="button" class="btn btn-primary" id="save">保存</button>
+							<button type="button" class="btn btn-primary" id="abondon">放弃</button>							
+						</div>
+
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+		<!--<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+		<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>-->
+		<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+		<script src="https://cdn.bootcss.com/popper.js/1.12.5/umd/popper.min.js"></script>
+		<script src="https://cdn.bootcss.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+		<script src="http://cdn.bootcss.com/bootstrap-daterangepicker/3.0.2/moment.min.js"></script>
+		<script src="http://cdn.bootcss.com/bootstrap-daterangepicker/3.0.2/daterangepicker.js"></script>
+		<script>	
+			let verb = "POST"
+			let localSci = {}
+			let user = localStorage.getItem("user")
+			if (user != null) {
+				user = JSON.parse(user)
+				$("#leader").val(user.userId)
+				$("#leader").attr("disabled", true)
+			}
+			let vue = new Vue({
+				el: '#app',
+				data: {
+					sciTypeList:[]
+				},
+				methods: {
+					dataInit: function() {
+						localSci = JSON.parse(sessionStorage.getItem("sci"));
+						if (localSci != null) {
+							console.log(localSci)
+							verb = "PUT"
+							$('#title').val(localSci.title);
+							console.log(document.getElementById("select"))
+							document.getElementById("select")[eval(localSci.typeId)-1].selected='selected'
+							$('#leader').val(localSci.userId);
+							$('#groupmember1').val(localSci.gp1);
+							$('#groupmember2').val(localSci.gp2);
+							$('#content').val(localSci.content);
+							beginDate = localSci.beginDate
+							endDate = localSci.endDate
+							$('#daterange-text').val(beginDate+' - ' + endDate)
+							if (localSci.groupmember != null) {
+								$('#groupmember1').val(localSci.groupmember[0]);
+								$('#groupmember2').val(localSci.groupmember[1]);						
+							}
+						}						
+					}
+				}
+			})
+			
+			vue.sciTypeList = JSON.parse(sessionStorage.getItem("sciType"))
+			console.log(vue.sciTypeList)
+			
+			
+			function getSciType() {
+//				let user = JSON.parse(sessionStorage.getItem("user"));
+				let xmlhttp = new XMLHttpRequest();
+				xmlhttp.open("GET", "http://127.0.0.1:8080/sci/sciType", true);
+				xmlhttp.onload = function(e) {
+					vue.sciTypeList = JSON.parse(this.response);
+					console.log(vue.sciTypeList)
+				}
+				xmlhttp.send();
+			}
+			getSciType()
+		
+			function init() {
+			var locale = {
+					"format": 'YYYY-MM-DD',
+					"separator": " - ",
+					"applyLabel": "确定",
+					"cancelLabel": "取消",
+					"fromLabel": "起始时间",
+					"toLabel": "结束时间'",
+					//					"customRangeLabel": "自定义",
+					"weekLabel": "W",
+					"daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+					"monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+					"firstDay": 1
+				};
+				//初始化显示当前时间
+				$('#daterange-text').html(moment().subtract('hours', 1).format('YYYY-MM-DD') + ' - ' + moment().format('YYYY-MM-DD'));
+				//日期控件初始化
+				$('#daterange-text').daterangepicker({
+						'locale': locale,
+						//汉化按钮部分
+						//						ranges: {
+						//							'今日': [moment(), moment()],
+						//							'昨日': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+						//							'最近7日': [moment().subtract(6, 'days'), moment()],
+						//							'最近30日': [moment().subtract(29, 'days'), moment()],
+						//							'本月': [moment().startOf('month'), moment().endOf('month')],
+						//							'上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+						//						},
+						startDate: moment().subtract(29, 'days'),
+						endDate: moment()
+					},
+					function(start, end) {
+						$('#daterange-btn').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+					}
+				);
+			};
+				
+			$(document).ready(function() {
+				//				$('body').bootstrapMaterialDesign();
+				init();
+				vue.dataInit()
+			});
+			$("#cbx").click(function() {
+				$("#submit").attr("disabled", !$(this)[0].checked);
+			});
+			
+			$("#submit").click(function() {
+				let sci = {};
+				sci.title = $('#title').val();
+				if (sci.title === '') {
+					$("#info")[0].innerHTML = "<div style='color: red;'>科研题目不能为空</div>";
+					return false
+				}
+				if (sci.title.length > 20) {
+					$("#info")[0].innerHTML = "<div style='color: red;'>科研题目不宜过长</div>";
+					return false
+				}
+				let id = $("#select option:selected").val();
+				sci.typeId = id.split(' ')[0];
+				sci.userId = $('#leader').val();
+				if (sci.userId === '') {
+					$("#info")[0].innerHTML = "<div style='color: red;'>主要负责人不能为空</div>";
+					return false
+				}				
+				let gp1 = $('#groupmember1').val();
+				let gp2 = $('#groupmember2').val();
+				sci.groupmember = []
+				if (gp1 != '') {
+					sci.groupmember.push(gp1)
+					if (sci.userId == gp1) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员不能是主要负责人</div>";
+						return false							
+					}
+					let flag = false
+					for (let i of test_list) {
+						if (i == gp1) {
+							flag = true		
+							break
+						}
+					}
+					if (flag == false) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员1不存在</div>";
+						return false						
+					}
+				}
+				if (gp2 != '') {
+					if (gp2 == gp1) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>两个组员不能是同一个人</div>";
+						return false						
+					}
+					if (sci.userId == gp2) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员不能是主要负责人</div>";
+						return false							
+					}
+					let flag = false
+					for (let i of test_list) {
+						if (i == gp2) {
+							flag = true		
+							break
+						}
+					}
+					if (flag == false) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员2不存在</div>";
+						return false						
+					}
+					sci.groupmember.push(gp2)
+				}
+				let time = $('#daterange-text').val();
+				sci.beginDate = new Date(time.split(' ')[0]);
+				sci.endDate = new Date(time.split(' ')[2]);
+				sci.content = $('#content').val();
+				if (sci.content === '') {
+					$("#info")[0].innerHTML = "<div style='color: red;'>详细内容不能为空</div>";
+					return false
+				}
+				sci.status = "待审核";
+//				console.log(sci);
+				let xmlhttp = new XMLHttpRequest();
+				if (verb === "POST") {
+					xmlhttp.open("POST", "http://127.0.0.1:8080/sci/sci", true);
+				}
+				else {
+					sci.sciId = localSci.sciId
+					xmlhttp.open("PUT", "http://127.0.0.1:8080/sci/sci/" + localSci.sciId, true);
+				}
+				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xmlhttp.onload = function(e) {
+					console.log(this.response);
+					if (this.response ==='ok') {
+						window.location.href = "teacher.html";
+					}
+				}
+				xmlhttp.send(JSON.stringify(sci));
+			});
+			
+			$("#save").click(function() {
+				let sci = {};
+				sci.title = $('#title').val();
+				if (sci.title.length > 20) {
+					$("#info")[0].innerHTML = "<div style='color: red;'>科研题目不宜过长</div>";
+					return false
+				}
+				let id = $("#select option:selected").val();
+				sci.typeId = id.split(' ')[0];
+				sci.userId = $('#leader').val();
+				if (sci.userId === '') {
+					$("#info")[0].innerHTML = "<div style='color: red;'>主要负责人不能为空</div>";
+					return false
+				}
+				let gp1 = $('#groupmember1').val();
+				let gp2 = $('#groupmember2').val();
+				sci.groupmember = []
+				if (gp1 != '') {
+					sci.groupmember.push(gp1)
+					if (sci.userId == gp1) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员不能是主要负责人</div>";
+						return false							
+					}
+					let flag = false
+					for (let i of test_list) {
+						if (i == gp1) {
+							flag = true		
+							break
+						}
+					}
+					if (flag == false) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员1不存在</div>";
+						return false						
+					}
+				}
+				if (gp2 != '') {
+					if (gp2 == gp1) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>两个组员不能是同一个人</div>";
+						return false						
+					}
+					if (sci.userId == gp2) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员不能是主要负责人</div>";
+						return false							
+					}
+					let flag = false
+					for (let i of test_list) {
+						if (i == gp1) {
+							flag = true		
+							break
+						}
+					}
+					if (flag == false) {
+						$("#info")[0].innerHTML = "<div style='color: red;'>小组成员2不存在</div>";
+						return false						
+					}
+					sci.groupmember.push(gp2)
+				}
+				let time = $('#daterange-text').val();
+				sci.beginDate = new Date(time.split(' ')[0]);
+				sci.endDate = new Date(time.split(' ')[2]);
+				sci.content = $('#content').val();
+				sci.status = "保存";
+//				console.log(sci);
+				let xmlhttp = new XMLHttpRequest();
+				if (verb === "POST") {
+					xmlhttp.open("POST", "http://127.0.0.1:8080/sci/sci", true);
+				}
+				else {
+					sci.sciId = localSci.sciId
+					xmlhttp.open("PUT", "http://127.0.0.1:8080/sci/sci/" + localSci.sciId, true);
+				}
+				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xmlhttp.onload = function(e) {
+					console.log(this.response);
+					if (this.response ==='ok') {
+						window.location.href = "teacher.html";
+					}
+				}
+				xmlhttp.send(JSON.stringify(sci));
+			});			
+			
+			$("#abondon").click(function() {
+				window.location.href = "teacher.html";
+			});
+			
+	    	var test_list = [];
+	        function getUser() {
+				let xmlhttp = new XMLHttpRequest();
+				xmlhttp.open("GET", "http://127.0.0.1:8080/sci/user", true);
+				xmlhttp.onload = function(e) {
+					result = JSON.parse(this.response)
+					for (let i of result) {
+						test_list.push(i.userId)
+					}
+				}
+				xmlhttp.send()
+			}
+	        getUser()
+	        var old_value = "";
+	        var highlightindex = -1;   //高亮
+	        //自动完成
+	        function AutoComplete(auto, search, mylist) {
+	            if ($("#" + search).val() != old_value || old_value == "") {
+	                var autoNode = $("#" + auto);   //缓存对象（弹出框）
+	                var carlist = new Array();
+	                var n = 0;
+	                old_value = $("#" + search).val();
+	                for (i in mylist) {
+	                    if (mylist[i].indexOf(old_value) >= 0) {
+	                        carlist[n++] = mylist[i];
+	                    }
+	                }
+	                if (carlist.length == 0) {
+	                    autoNode.hide();
+	                    return;
+	                }
+	                autoNode.empty();  //清空上次的记录
+	                for (i in carlist) {
+	                    var wordNode = carlist[i];   //弹出框里的每一条内容
+	                    var newDivNode = $("<div>").attr("id", i);    //设置每个节点的id值
+	                    newDivNode.attr("style", "font:14px/25px arial;height:25px;padding:0 8px;cursor: pointer;");
+	                    newDivNode.html(wordNode).appendTo(autoNode);  //追加到弹出框
+	                    //鼠标移入高亮，移开不高亮
+	                    newDivNode.mouseover(function () {
+	                        if (highlightindex != -1) {        //原来高亮的节点要取消高亮（是-1就不需要了）
+	                            autoNode.children("div").eq(highlightindex).css("background-color", "white");
+	                        }
+	                        //记录新的高亮节点索引
+	                        highlightindex = $(this).attr("id");
+	                        $(this).css("background-color", "#ebebeb");
+	                    });
+	                    newDivNode.mouseout(function () {
+	                        $(this).css("background-color", "white");
+	                    });
+	                    //鼠标点击文字上屏
+	                    newDivNode.click(function () {
+	                        //取出高亮节点的文本内容
+	                        var comText = autoNode.hide().children("div").eq(highlightindex).text();
+	                        highlightindex = -1;
+	                        //文本框中的内容变成高亮节点的内容
+	                        $("#" + search).val(comText);
+	                    })
+	                    if (carlist.length > 0) {    //如果返回值有内容就显示出来
+	                        autoNode.show();
+	                    } else {               //服务器端无内容返回 那么隐藏弹出框
+	                        autoNode.hide();
+	                        //弹出框隐藏的同时，高亮节点索引值也变成-1
+	                        highlightindex = -1;
+	                    }
+	                }
+	            }
+	            //点击页面隐藏自动补全提示框
+	            document.onclick = function (e) {
+	                var e = e ? e : window.event;
+	                var tar = e.srcElement || e.target;
+	                if (tar.id != search) {
+	                    if ($("#" + auto).is(":visible")) {
+	                        $("#" + auto).css("display", "none")
+	                    }
+	                }
+	            }
+	        }
+	        $(function () {
+	            old_value = $("#groupmember1").val();
+	            $("#groupmember1").focus(function () {
+	                if ($("#groupmember1").val() == "") {
+	                    AutoComplete("auto_div1", "groupmember1", test_list);
+	                }
+	            });
+	            $("#groupmember1").keyup(function () {
+	                AutoComplete("auto_div1", "groupmember1", test_list);
+	            });
+	            
+	            $("#groupmember2").focus(function () {
+	                if ($("#groupmember2").val() == "") {
+	                    AutoComplete("auto_div2", "groupmember2", test_list);
+	                }
+	            });
+	            $("#groupmember2").keyup(function () {
+	                AutoComplete("auto_div2", "groupmember2", test_list);
+	            });
+	        });
+			
+		</script>
+	</body>
+
+</html>
